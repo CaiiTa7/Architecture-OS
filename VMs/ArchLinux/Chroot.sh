@@ -22,7 +22,6 @@ enable_ntp() {
     ls -sf /usr/share/zoneinfo/Europe/Brussels /etc/localtime
     echo "fr_BE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
-    hwclock --systohc # Set the hardware clock from the system clock
     timedatectl set-ntp true
     timedatectl set-timezone Europe/Brussels
 
@@ -57,7 +56,7 @@ configure_bootloader() {
     echo "Configuration du bootloader..."
 
     pacman -Sy grub efibootmgr os-prober mtools # Install grub and os-prober to detect other OS
-    grub-install --target=x86_64-efi --bootloader-id=GRUB # Install grub
+    grub-install /dev/sda # Install grub on the disk
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
@@ -77,15 +76,6 @@ configure_user() {
     echo "student ALL=(ALL) ALL" > /etc/sudoers # Allow student to use sudo
 }
 
-# Function sot exit and reoot properly
-exit_and_reboot() {
-    echo "Sortie et redémarrage..."
-
-    exit
-    umount -R /mnt
-    reboot
-}
-
 # Main function
 main() {
     configure_network
@@ -96,7 +86,7 @@ main() {
     configure_bootloader
     install_packages
     configure_user
-    exit_and_reboot
+    exit
 }
 
 main

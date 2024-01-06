@@ -1,33 +1,35 @@
 #!/bin/bash
 set -e
 
-# Function to create partitions
-create_partitions() {
-    echo "Création des partitions sur /dev/sda..."
-
-    # Delete all existing partitions
-    sfdisk --delete /dev/sda 2> /dev/null || true # Ignore errors if partitions don't exist and nullify output
-
-    # Create new partitions (512M boot, 4G swap, rest root)
-    sfdisk /dev/sda <<EOF
-,512M,*
-,4G
-,
-EOF
-
-    # Update partition table
-    partprobe /dev/sda
-
-}
-
-# Function to format partitions
+# Function to create partitions and format them
 format_partitions() {
     echo "Formatage des partitions..."
 
-    mkfs.ext2 /dev/sda1
-    mkswap /dev/sda2
-    swapon /dev/sda2
-    mkfs.ext4 /dev/sda3
+    # Le nom du disque à partitionner
+    disk="/dev/sda"
+
+    # Créer une nouvelle table de partitions de type gpt
+    echo -e "g\nw" | fdisk $disk
+
+    # Créer la partition de boot de 512M
+    echo -e "n\n\n\n+512M\nw" | fdisk $disk
+
+    # Créer la partition de swap de 4G
+    echo -e "n\n\n\n+4G\nt\n\n82\nw" | fdisk $disk
+
+    # Créer la partition racine avec le reste de l'espace disque
+    echo -e "n\n\n\n\nw" | fdisk $disk
+
+    # Formater la partition de boot en ext2
+    mkfs.ext2 ${disk}1
+
+    # Formater la partition de swap
+    mkswap ${disk}2
+    swapon ${disk}2
+
+    # Formater la partition racine en ext4
+    mkfs.ext4 ${disk}3
+
 }
 
 # Function to mount partitions, enable swapon, sda1 is boot, sda2 is swap, sda3 is root
@@ -66,7 +68,6 @@ chroot_environment() {
 }
 
 # Executing functions in order
-create_partitions
 format_partitions
 mount_partitions
 install_arch
