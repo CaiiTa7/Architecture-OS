@@ -10,7 +10,6 @@ configure_network() {
     pacman -Sy networkmanager
     systemctl enable NetworkManager
     systemctl start NetworkManager
-    nmtui
 
 }
 
@@ -23,7 +22,6 @@ enable_ntp() {
     echo "fr_BE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
     timedatectl set-ntp true
-    timedatectl set-timezone Europe/Brussels
 
 }
 
@@ -56,7 +54,7 @@ configure_bootloader() {
     echo "Configuration du bootloader..."
 
     pacman -Sy grub efibootmgr os-prober mtools # Install grub and os-prober to detect other OS
-    grub-install /dev/sda # Install grub on the disk
+    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 

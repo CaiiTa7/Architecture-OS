@@ -46,8 +46,8 @@ mount_partitions() {
 # Function to install Arch Linux
 install_arch() {
     echo "Installation d'Arch Linux..."
-
-    pacstrap -K /mnt base linux linux-firmware nano curl # -K to ignore kernel warning
+    timedatectl set-timezone Europe/Brussels
+    pacstrap -i /mnt base linux linux-firmware nano # -i = ignore missing packages
 }
 
 # Function to generate fstab
