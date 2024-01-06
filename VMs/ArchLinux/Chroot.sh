@@ -72,7 +72,7 @@ install_packages() {
 configure_user() {
     echo "Configuration de l'utilisateur student..."
 
-    useradd -m -aG users,wheel -s /bin/zsh student # -m to create home directory, -aG to add to groups users and wheel (sudo) and -s to set shell to zsh shell without password
+    useradd -m -G users,wheel -s /bin/zsh student # -m to create home directory, -G to add to groups users and wheel (sudo) and -s to set shell to zsh shell without password
     echo "student:Tigrou007" | chpasswd
     echo "student ALL=(ALL) ALL" > /etc/sudoers # Allow student to use sudo
 }
