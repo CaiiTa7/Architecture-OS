@@ -1,33 +1,14 @@
 #!/bin/bash
 set -e
 
-# Function to change the keyboard layout to belgian
-change_keyboard() {
-    echo "Changement du clavier..."
-    loadkeys be-latin1
-}
-
-#Function to activate NTP and synchronize the Europe/Brussels system clock
-enable_ntp() {
-    echo "Activation du ntp et synchronisation de l'horloge du système..."
-    timedatectl set-ntp true
-    timedatectl set-timezone Europe/Brussels
-}
-
-# Function to display partition information
-print_partition_info() {
-    echo "Informations sur les partitions :"
-    fdisk -l /dev/sda
-}
-
 # Function to create partitions
 create_partitions() {
     echo "Création des partitions sur /dev/sda..."
 
-    # Supprimer toutes les partitions existantes
-    sfdisk --delete /dev/sda 2> /dev/null || true
+    # Delete all existing partitions
+    sfdisk --delete /dev/sda 2> /dev/null || true # Ignore errors if partitions don't exist and nullify output
 
-    # Créer la partition de boot (512M)
+    # Create new partitions (512M boot, 4G swap, rest root)
     sfdisk /dev/sda <<EOF
 ,512M,*
 ,4G
@@ -37,7 +18,6 @@ EOF
     # Update partition table
     partprobe /dev/sda
 
-    print_partition_info
 }
 
 # Function to format partitions
@@ -63,7 +43,7 @@ mount_partitions() {
 install_arch() {
     echo "Installation d'Arch Linux..."
 
-    pacstrap -i /mnt base linux linux-firmware neovim
+    pacstrap -K /mnt base linux linux-firmware nano  # -K to ignore kernel warning
 }
 
 # Function to generate fstab
@@ -76,21 +56,121 @@ generate_fstab() {
 # Function for chroot in the new environment
 chroot_environment() {
     echo "Chroot dans le nouvel environnement..."
-    
-    arch-chroot /mnt <<ENDCHROOT
-    # Configuration du mot de passe root avec chpasswd
-    echo "root:Tigrou007" | chpasswd -e
-ENDCHROOT
+# Mount the necessary filesystems in the chroot    
+    mount --bind /proc /mnt/proc
+    mount --bind /sys /mnt/sys
+    mount --bind /dev /mnt/dev
+    mount --bind /run /mnt/run
 
-# Exécution des fonctions dans l'ordre
-change_keyboard
-enable_ntp
-create_partitions
+    # Passez dans le chroot
+    arch-chroot /mnt /bin/bash
+    echo "root:Tigrou007" | chpasswd
+
+    # Mount mount points recursively in the chroot
+    mount -t proc proc /proc
+    mount -t sysfs sys /sys
+    mount -t devtmpfs udev /dev
+    mount -t devpts devpts /dev/pts
+
+}
+
+# Configure the network
+configure_network() {
+    echo "Configuration du réseau..."
+
+    pacman -Sy networkmanager
+    systemctl enable NetworkManager
+    systemctl start NetworkManager
+    nmtui
+  
+}
+
+#Function to activate NTP and synchronize the Europe/Brussels system clock
+enable_ntp() {
+    echo "Activation du ntp et synchronisation de l'horloge du système..."
+
+    timedatectl set-ntp true
+    timedatectl set-timezone Europe/Brussels
+    touch /etc/localtime
+    ls -sf /usr/share/zoneinfo/Europe/Brussels /etc/localtime
+    hwclock --systohc # Synchronise hardware clock from system clock
+
+}
+
+# Configure the system language and locale
+configure_language() {
+    echo "Configuration de la langue et du locale du système..."
+
+    echo "LANG=fr_BE.UTF-8" > /etc/locale.conf
+    echo "KEYMAP=be-latin1" > /etc/vconsole.conf
+    echo "fr_BE.UTF-8 UTF-8" >> /etc/locale.gen
+    locale-gen
+}
+
+# Configure the hostname
+configure_hostname() {
+    echo "Configuration du hostname..."
+
+    echo "archlinux" >> /etc/hostname 
+}
+
+# Configure the initramfs
+configure_initramfs() {
+    echo "Configuration de l'initramfs..." 
+
+    mkinitcpio -p linux # -p to ignore kernel warning linux to use linux kernel
+}
+
+# Configure the bootloader (GRUB)
+configure_bootloader() {
+    echo "Configuration du bootloader..."
+
+    pacman -Sy grub
+    grub-install /dev/sda
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+# Installation of packages python python3 neofetch zsh
+install_packages() {
+    echo "Installation des packages python python3 neofetch..."
+
+    pacman -Sy python python3 neofetch zsh
+}
+
+# Configure the user student with password Tigrou007
+configure_user() {
+    echo "Configuration de l'utilisateur student..."
+
+    useradd -m -aG users,wheel -s /bin/zsh student # -m to create home directory, -aG to add to groups users and wheel (sudo) and -s to set shell to zsh shell without password
+    echo "student:Tigrou007" | chpasswd
+    echo "student ALL=(ALL) ALL" > /etc/sudoers # Allow student to use sudo
+}
+
+# Function sot exit and reoot properly
+exit_and_reboot() {
+    echo "Sortie et redémarrage..."
+
+    exit
+    umount -R /mnt
+    reboot
+}
+
+# Executing functions in order
+
+#create_partitions
 format_partitions
 mount_partitions
 install_arch
 generate_fstab
 chroot_environment
+configure_network
+enable_ntp
+configure_language
+configure_hostname
+configure_initramfs
+configure_bootloader
+install_packages
+configure_user
+exit_and_reboot
 
 echo "Terminé! Assurez-vous de vérifier les configurations avant de redémarrer."
-
