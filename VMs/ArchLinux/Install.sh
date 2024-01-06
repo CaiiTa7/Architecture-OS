@@ -4,17 +4,21 @@ set -e
 # Function to create partitions and format them
 format_partitions() {
     echo "Formatage des partitions..."
+
 fdisk /dev/sda << FDISK_CMDS
 o
 n
+p
 1
 
 +512M
 n
+p
 2
 
 +4G
 n
+p
 3
 
 
