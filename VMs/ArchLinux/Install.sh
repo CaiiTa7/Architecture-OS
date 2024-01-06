@@ -4,32 +4,22 @@ set -e
 # Function to create partitions and format them
 format_partitions() {
     echo "Formatage des partitions..."
-    pacman -Syy # Update pacman database
-    pacman -S parted --noconfirm 
-    # Le nom du disque à partitionner
-    disk="/dev/sda"
+fdisk /dev/sda << FDISK_CMDS
+o
+n
+1
 
-    # Créer une nouvelle table de partitions de type gpt
-    echo -e "g\nw" | fdisk $disk
++512M
+n
+2
 
-    # Créer la partition de boot de 512M
-    echo -e "n\n\n\n+512M\nw" | fdisk $disk
++4G
+n
+3
 
-    # Créer la partition de swap de 4G
-    echo -e "n\n\n\n+4G\nt\n\n82\nw" | fdisk $disk
 
-    # Créer la partition racine avec le reste de l'espace disque
-    echo -e "n\n\n\n\nw" | fdisk $disk
-
-    # Formater la partition de boot en ext2
-    mkfs.ext2 ${disk}1
-
-    # Formater la partition de swap
-    mkswap ${disk}2
-    swapon ${disk}2
-
-    # Formater la partition racine en ext4
-    mkfs.ext4 ${disk}3
+w
+FDISK_CMDS
 
 }
 

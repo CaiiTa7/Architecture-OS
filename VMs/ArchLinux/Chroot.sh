@@ -7,7 +7,7 @@ configure_network() {
     
     echo "Configuration du réseau..."
     sed -i "127.0.0.1       archlinux" /etc/hosts
-    pacman -Sy networkmanager
+    pacman -Sy networkmanager --noconfirm
     systemctl enable NetworkManager
     systemctl start NetworkManager
 
@@ -19,7 +19,7 @@ enable_ntp() {
 
     touch /etc/localtime
     ls -sf /usr/share/zoneinfo/Europe/Brussels /etc/localtime
-    echo "fr_BE.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "fr_BE.UTF-8 UTF-8" > /etc/locale.gen
     locale-gen
 
 }
@@ -61,7 +61,7 @@ configure_bootloader() {
 install_packages() {
     echo "Installation des packages python python3 neofetch..."
 
-    pacman -Sy python python3 neofetch zsh
+    pacman -Sy python python3 neofetch zsh --noconfirm
 }
 
 # Configure the user student with password Tigrou007
@@ -83,7 +83,6 @@ main() {
     configure_bootloader
     install_packages
     configure_user
-    exit
 }
 
 main
