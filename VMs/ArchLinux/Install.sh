@@ -56,14 +56,20 @@ generate_fstab() {
 # Function for chroot in the new environment
 chroot_environment() {
     echo "Chroot dans le nouvel environnement..."
-# Mount the necessary filesystems in the chroot    
+    # Mount the necessary filesystems in the chroot    
     mount --bind /proc /mnt/proc
     mount --bind /sys /mnt/sys
     mount --bind /dev /mnt/dev
     mount --bind /run /mnt/run
 
-    # Passez dans le chroot
+    # Go to the chroot
     arch-chroot /mnt /bin/bash
+
+}
+
+# Configure the network
+configure_network() {
+    # Set the root password to Tigrou007
     echo "root:Tigrou007" | chpasswd
 
     # Mount mount points recursively in the chroot
@@ -71,13 +77,8 @@ chroot_environment() {
     mount -t sysfs sys /sys
     mount -t devtmpfs udev /dev
     mount -t devpts devpts /dev/pts
-
-}
-
-# Configure the network
-configure_network() {
+    
     echo "Configuration du réseau..."
-
     pacman -Sy networkmanager
     systemctl enable NetworkManager
     systemctl start NetworkManager
