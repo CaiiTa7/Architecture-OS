@@ -4,7 +4,8 @@ set -e
 # Function to create partitions and format them
 format_partitions() {
     echo "Formatage des partitions..."
-
+    pacman -Syy # Update pacman database
+    pacman -S parted --noconfirm 
     # Le nom du disque à partitionner
     disk="/dev/sda"
 
@@ -47,6 +48,7 @@ mount_partitions() {
 install_arch() {
     echo "Installation d'Arch Linux..."
     timedatectl set-timezone Europe/Brussels
+    timedatectl set-ntp true
     pacstrap -i /mnt base linux linux-firmware nano # -i = ignore missing packages
 }
 

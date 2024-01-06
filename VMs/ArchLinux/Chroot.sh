@@ -21,7 +21,6 @@ enable_ntp() {
     ls -sf /usr/share/zoneinfo/Europe/Brussels /etc/localtime
     echo "fr_BE.UTF-8 UTF-8" >> /etc/locale.gen
     locale-gen
-    timedatectl set-ntp true
 
 }
 
@@ -53,7 +52,7 @@ configure_initramfs() {
 configure_bootloader() {
     echo "Configuration du bootloader..."
 
-    pacman -Sy grub efibootmgr os-prober mtools # Install grub and os-prober to detect other OS
+    pacman -Sy grub efibootmgr os-prober mtools --noconfirm # Install grub and os-prober to detect other OS
     grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
     grub-mkconfig -o /boot/grub/grub.cfg
 }
