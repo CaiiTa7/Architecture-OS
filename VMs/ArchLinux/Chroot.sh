@@ -1,88 +1,49 @@
 #!/bin/bash
 
-# Configure the network
-configure_network() {
-    # Set the root password to Tigrou007
-    echo "root:Tigrou007" | chpasswd
-    
-    echo "Configuration du réseau..."
-    sed -i "127.0.0.1       archlinux" /etc/hosts
-    pacman -Sy networkmanager --noconfirm
-    systemctl enable NetworkManager
-    systemctl start NetworkManager
+# Function for timezone, locale, keyboard and hostname
+locale_timezone_keyboard_hostname() {
 
-}
-
-#Function to activate NTP and synchronize the Europe/Brussels system clock
-enable_ntp() {
-    echo "Activation du ntp et synchronisation de l'horloge du système..."
-
-    touch /etc/localtime
-    ls -sf /usr/share/zoneinfo/Europe/Brussels /etc/localtime
-    echo "fr_BE.UTF-8 UTF-8" > /etc/locale.gen
+    # Configure timezone, locale, keyboard and hostname
+    ln -sf /usr/share/zoneinfo/Europe/Brussels /etc/localtime
+    hwclock --systohc
+    sed -i 's/#fr_BE.UTF-8 UTF-8/fr_BE.UTF-8 UTF-8/' /etc/locale.gen
     locale-gen
-
+    echo "LANG=fr_BE.UTF-8" >> /etc/locale.conf
+    echo "KEYMAP=be-latin1" >> /etc/vconsole.conf
+    echo "archlinux" >> /etc/hostname
 }
 
-# Configure the system language and locale
-configure_language() {
-    echo "Configuration de la langue et du locale du système..."
-
-    echo "LANG=fr_BE.UTF-8" > /etc/locale.conf
-    export LANG=fr_BE.UTF-8
-    echo "KEYMAP=be-latin1" > /etc/vconsole.conf
-
+# Function to install packages
+install_packages() {
+    pacman -S zsh neofetch python python3 networkmanager --noconfirm
+    systemctl enable NetworkManager
 }
 
-# Configure the hostname
-configure_hostname() {
-    echo "Configuration du hostname..."
-
-    echo "archlinux" > /etc/hostname 
+# Fuction for initramfs
+initramfs() {
+    mkinitcpio -P
 }
 
-# Configure the initramfs
-configure_initramfs() {
-    echo "Configuration de l'initramfs..." 
-
-    mkinitcpio -p linux # -p to ignore kernel warning linux to use linux kernel
+# Function for root password
+root_password() {
+    echo "root:Tigrou007" | chpasswd
 }
 
-# Configure the bootloader (GRUB)
-configure_bootloader() {
-    echo "Configuration du bootloader..."
-
-    pacman -Sy grub efibootmgr os-prober mtools --noconfirm # Install grub and os-prober to detect other OS
-    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+# Function for grub
+grub() {
+    pacman -S grub --noconfirm
+    grub-install /dev/sda
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-# Installation of packages python python3 neofetch zsh
-install_packages() {
-    echo "Installation des packages python python3 neofetch..."
-
-    pacman -Sy python python3 neofetch zsh --noconfirm
-}
-
-# Configure the user student with password Tigrou007
-configure_user() {
-    echo "Configuration de l'utilisateur student..."
-
-    useradd -m -G users,wheel -s /bin/zsh student # -m to create home directory, -G to add to groups users and wheel (sudo) and -s to set shell to zsh shell without password
-    echo "student:Tigrou007" | chpasswd
-    echo "student ALL=(ALL) ALL" > /etc/sudoers # Allow student to use sudo
-}
-
-# Main function
+# Function main
 main() {
-    configure_network
-    enable_ntp
-    configure_language
-    configure_hostname
-    configure_initramfs
-    configure_bootloader
+    locale_timezone_keyboard_hostname
+    initramfs
+    grub
+    root_password
     install_packages
-    configure_user
 }
 
+# Call main function
 main

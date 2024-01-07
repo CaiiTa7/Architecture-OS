@@ -1,54 +1,58 @@
 #!/bin/bash
 set -e
 
-# Function to create partitions and format them
-format_partitions() {
+# Function to create partitions, format and mount them
+disk_configuration() {
+
+    # Update pacman database
+    pacman -Sy --noconfirm # Update pacman database
+
     echo "Formatage des partitions..."
 
 fdisk /dev/sda << FDISK_CMDS
-o
-n
-p
+g 
+n 
 1
 
 +512M
-n
-p
-2
+t 
+1
+4 
+n 
+2 
 
-+4G
-n
-p
++4G 
+t 
+2 
+19 
+n  
+3 
+
+
+t
 3
-
-
+24
 w
 FDISK_CMDS
-    
+
+        # Format partitions
         mkfs.ext2 /dev/sda1 # Boot
         mkfs.ext4 /dev/sda3 # Root
         mkswap /dev/sda2 # Swap
         swapon /dev/sda2
 
-}
-
-# Function to mount partitions, enable swapon, sda1 is boot, sda2 is swap, sda3 is root
-mount_partitions() {
-    echo "Montage des partitions..."
-
-    pacman -Syy # Update pacman database
-    mount /dev/sda3 /mnt
-    mkdir /mnt/boot
-    mount /dev/sda1 /mnt/boot
-    
+        # Mount partitions
+        mount /dev/sda3 /mnt
+        mkdir /mnt/boot
+        mount /dev/sda1 /mnt/boot
 }
 
 # Function to install Arch Linux
 install_arch() {
     echo "Installation d'Arch Linux..."
-    timedatectl set-timezone Europe/Brussels
-    timedatectl set-ntp true
-    pacstrap -i /mnt base linux linux-firmware nano # -i = ignore missing packages
+    timedatectl set-ntp true # Synchronise time
+    timedatectl set-timezone Europe/Brussels # Set timezone
+    pacstrap -K /mnt base linux linux-firmware
 }
 
 # Function to generate fstab
@@ -68,9 +72,13 @@ chroot_environment() {
 
 }
 
-# Executing functions in order
-format_partitions
-mount_partitions
-install_arch
-generate_fstab
-chroot_environment
+# function main
+main() {
+    disk_configuration
+    install_arch
+    generate_fstab
+    chroot_environment
+}
+
+# Call main function
+main
