@@ -31,8 +31,8 @@ root_password() {
 
 # Function for grub
 grub() {
-    pacman -S grub --noconfirm
-    grub-install /dev/sda
+    pacman -S grub dosfstools --noconfirm
+    grub-install --target=i386-pc /dev/sda
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 
