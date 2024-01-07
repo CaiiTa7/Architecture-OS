@@ -28,7 +28,7 @@ t
 19 
 t
 3
-24
+23
 w
 FDISK_CMDS
 
