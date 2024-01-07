@@ -15,7 +15,7 @@ locale_timezone_keyboard_hostname() {
 
 # Function to install packages
 install_packages() {
-    pacman -S zsh neofetch python python3 networkmanager --noconfirm
+    pacman -S zsh neofetch python python3 networkmanager wget --noconfirm
     systemctl enable NetworkManager
 }
 
