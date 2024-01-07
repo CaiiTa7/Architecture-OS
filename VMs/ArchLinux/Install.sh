@@ -9,17 +9,17 @@ disk_configuration() {
 fdisk /dev/sda << FDISK_CMDS
 o 
 n 
-1
 p
+1
 
 +512M
 n 
-2 
-p
+p 
+2
 +4G
 n  
-3
-p 
+p
+3 
 
 
 t 
@@ -33,6 +33,7 @@ t
 83
 w
 FDISK_CMDS
+
         sleep 6
         # Format partitions
         mkfs.fat -F32 /dev/sda1 # Boot
