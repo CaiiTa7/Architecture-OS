@@ -7,28 +7,28 @@ disk_configuration() {
     echo "Formatage des partitions..."
 
 fdisk /dev/sda << FDISK_CMDS
-o 
-n 
+o
+n
 p
 1
 
 +512M
-n 
-p 
+n
+p
 2
 
 +4G
-n  
+n
 p
-3 
+3
 
 
-t 
+t
 1
 83
-t 
-2 
-82 
+t
+2
+82
 t
 3
 83
