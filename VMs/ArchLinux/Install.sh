@@ -31,7 +31,7 @@ t
 23
 w
 FDISK_CMDS
-
+        sleep 6
         # Format partitions
         mkfs.ext2 /dev/sda1 # Boot
         mkfs.ext4 /dev/sda3 # Root
