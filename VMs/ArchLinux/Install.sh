@@ -4,9 +4,6 @@ set -e
 # Function to create partitions, format and mount them
 disk_configuration() {
 
-    # Update pacman database
-    pacman -Sy --noconfirm # Update pacman database
-
     echo "Formatage des partitions..."
 
 fdisk /dev/sda << FDISK_CMDS
