@@ -9,15 +9,15 @@ disk_configuration() {
 fdisk /dev/sda << FDISK_CMDS
 g 
 n 
-1
+
 
 +512M
 n 
-2 
+ 
 
 +4G
 n  
-3 
+ 
 
 
 t 
