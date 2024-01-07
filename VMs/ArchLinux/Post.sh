@@ -11,3 +11,10 @@ add_user() {
     sed -i 's/^# %wheel ALL=(ALL:ALL) ALL$/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 }
+
+# function to call all the other functions
+main() {
+    add_user
+}
+
+main
