@@ -15,6 +15,11 @@ locale_timezone_keyboard_hostname() {
 
 # Function to install packages
 install_packages() {
+    rm -r /etc/pacman.d/gnupg/
+    pacman-key --init
+    pacman-key --populate archlinux
+    pacman -Sc
+    pacman -Syyu
     pacman -S zsh neofetch python python3 networkmanager wget sudo nano --noconfirm
     systemctl enable NetworkManager
 }
