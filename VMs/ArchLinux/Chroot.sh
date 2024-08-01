@@ -20,7 +20,7 @@ install_packages() {
     pacman-key --populate archlinux
     pacman -Sc
     pacman -Syyu
-    pacman -S zsh neofetch python python3 networkmanager wget sudo nano --noconfirm
+    pacman -S neofetch python python3 networkmanager wget sudo nano --noconfirm
     systemctl enable NetworkManager
 }
 
