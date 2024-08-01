@@ -3,7 +3,7 @@
 # function to set up user student
 add_user() {
     # Creating the student user
-    useradd -m -G wheel -s /bin/zsh student
+    useradd -m -G wheel student
     echo "student:Tigrou007" | chpasswd
 
     # Uncomment the line allowing members of the wheel group to use sudo
